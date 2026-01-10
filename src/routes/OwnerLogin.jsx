@@ -18,7 +18,7 @@ export default function OwnerLogin() {
     setBusy(true);
     try {
       await signInWithEmailAndPassword(auth, email.trim(), pass);
-      nav("/owner"); // 🔑 se resuelve por admin-email
+      nav("/owner", { replace: true }); // 🔑 se resuelve por admin-email
     } catch {
       setErr("Email o contraseña incorrectos.");
     } finally {
@@ -35,12 +35,22 @@ export default function OwnerLogin() {
 
         <form onSubmit={onLogin}>
           <label className="label">Email</label>
-          <Input type="email" value={email} onChange={e => setEmail(e.target.value)} />
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+          />
 
           <div style={{ height: 12 }} />
 
           <label className="label">Contraseña</label>
-          <Input type="password" value={pass} onChange={e => setPass(e.target.value)} />
+          <Input
+            type="password"
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+            autoComplete="current-password"
+          />
 
           {err && <div style={{ marginTop: 12, color: "#ef4444" }}>{err}</div>}
 

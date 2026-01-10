@@ -21,47 +21,77 @@ export default function OwnerDashboard() {
   const [fechaYmd, setFechaYmd] = useState(ymdLocal());
   const [loading, setLoading] = useState(true);
 
-  // 🔐 auth
+  // ✅ cuando cambia la URL, actualizamos el slug local
   useEffect(() => {
-    return onAuthStateChanged(auth, async (u) => {
+    setSlug(slugParam || null);
+  }, [slugParam]);
+
+  // 🔐 auth + resolver slug si estás en /owner (sin :slug)
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
       if (!u) {
-        nav("/owner/login");
+        setUser(null);
+        nav("/owner/login", { replace: true });
         return;
       }
+
       setUser(u);
 
-      // si NO viene slug por URL → resolver por admin email
       if (!slugParam) {
-        const agendas = await listAgendasForAdmin(u.email);
-        if (!agendas.length) {
+        try {
+          setLoading(true);
+          const agendas = await listAgendasForAdmin(u.email);
+          if (!agendas.length) {
+            await signOut(auth);
+            alert("Este usuario no es admin de ninguna agenda.");
+            nav("/owner/login", { replace: true });
+            return;
+          }
+
+          // ✅ si querés selector cuando hay varias, lo hacemos después
+          nav(`/owner/${agendas[0].slug}`, { replace: true });
+        } catch (e) {
           await signOut(auth);
-          alert("Este usuario no es admin de ninguna agenda.");
-          nav("/owner/login");
-          return;
+          nav("/owner/login", { replace: true });
+        } finally {
+          setLoading(false);
         }
-        nav(`/owner/${agendas[0].slug}`, { replace: true });
       }
     });
+
+    return () => unsub();
   }, [nav, slugParam]);
 
-  // 📡 agenda
+  // 📡 agenda (se subscribe cuando hay slug)
   useEffect(() => {
     if (!slug) return;
+
     setLoading(true);
-    return streamAgenda(slug, (a) => {
+    const unsub = streamAgenda(slug, (a) => {
       setAgenda(a);
       setLoading(false);
     });
+
+    return () => unsub?.();
   }, [slug]);
 
   const title = useMemo(() => agenda?.nombrePublico || slug, [agenda, slug]);
 
   async function doLogout() {
     await signOut(auth);
-    nav("/owner/login");
+    nav("/owner/login", { replace: true });
   }
 
-  if (!slug) return null;
+  // si estás en /owner sin slug todavía, mostramos loader (no null)
+  if (!slug) {
+    return (
+      <BrandShell loading={true} agenda={null}>
+        <div className="card">
+          <div className="muted">Cargando panel...</div>
+        </div>
+      </BrandShell>
+    );
+  }
 
   return (
     <BrandShell
@@ -69,8 +99,12 @@ export default function OwnerDashboard() {
       agenda={agenda}
       right={
         <div className="row" style={{ alignItems: "center" }}>
-          <Link className="pill" to={`/agenda/${slug}`}>Ver agenda pública</Link>
-          <button className="btn" onClick={doLogout}>Salir</button>
+          <Link className="pill" to={`/agenda/${slug}`}>
+            Ver agenda pública
+          </Link>
+          <button className="btn" onClick={doLogout}>
+            Salir
+          </button>
         </div>
       }
     >
@@ -88,8 +122,11 @@ export default function OwnerDashboard() {
             </div>
 
             <div style={{ height: 12 }} />
+
             <OwnerDayAgenda slug={slug} fechaYmd={fechaYmd} agenda={agenda} />
+
             <div style={{ height: 12 }} />
+
             <OwnerInternalBlock slug={slug} fechaYmd={fechaYmd} agenda={agenda} />
           </div>
 

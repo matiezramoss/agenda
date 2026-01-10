@@ -1,25 +1,70 @@
 import React from "react";
 
-export function Card({ children, ...props }) {
-  return <div className="card" {...props}>{children}</div>;
+/* ===========================
+   Card
+   =========================== */
+export function Card({ children, className = "", ...props }) {
+  return (
+    <div className={`card ${className}`} {...props}>
+      {children}
+    </div>
+  );
 }
 
-export function Input(props) {
-  return <input className="input" {...props} />;
+/* ===========================
+   Inputs
+   =========================== */
+export function Input({ className = "", ...props }) {
+  return <input className={`input ${className}`} {...props} />;
 }
 
-export function Select(props) {
-  return <select className="select" {...props} />;
+export function Select({ className = "", children, ...props }) {
+  return (
+    <select className={`select ${className}`} {...props}>
+      {children}
+    </select>
+  );
 }
 
-export function Textarea(props) {
-  return <textarea className="textarea" {...props} />;
+export function Textarea({ className = "", ...props }) {
+  return <textarea className={`textarea ${className}`} {...props} />;
 }
 
-export function Button({ className = "", ...props }) {
-  return <button className={`btn ${className}`} {...props} />;
+/* ===========================
+   Button
+   className esperadas:
+   - primary
+   - success
+   - danger
+   - ghost (opcional)
+   =========================== */
+export function Button({
+  className = "",
+  type = "button",
+  disabled = false,
+  children,
+  ...props
+}) {
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      className={`btn ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
 }
 
+/* ===========================
+   Badge
+   variants:
+   - ok
+   - warn
+   - danger (opcional)
+   - soft (opcional)
+   =========================== */
 export function Badge({ variant = "", children }) {
   return <span className={`badge ${variant}`}>{children}</span>;
 }

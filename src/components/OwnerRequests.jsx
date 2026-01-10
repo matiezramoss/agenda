@@ -3,11 +3,28 @@ import { streamOwnerPending, ownerSetEstado } from "../lib/firestore.js";
 import { minutesToHHMM } from "../lib/time.js";
 import { Card, Button, Badge } from "./Ui.jsx";
 
+function money(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return String(v ?? "—");
+  return new Intl.NumberFormat("es-AR").format(n);
+}
+
 function payInfo(r) {
   const t = r.tipoPago || "—";
-  const total = r.montoTotal ?? "—";
-  const sena = r.montoSena ? ` (seña ${r.montoSena})` : "";
+  const total = money(r.montoTotal ?? "—");
+  const sena = r.montoSena ? ` · seña ${money(r.montoSena)}` : "";
   return `${t} · total ${total}${sena}`;
+}
+
+function serviceInfo(r) {
+  // soporta tanto el nuevo schema (servicioNombre/duracionMin/montoTotal)
+  // como valores faltantes
+  const name = r.servicioNombre || r.servicioKey || null;
+  const dur = r.duracionMin ? `${r.duracionMin} min` : null;
+  const price = r.montoTotal != null ? `$${money(r.montoTotal)}` : null;
+
+  const parts = [name, dur, price].filter(Boolean);
+  return parts.length ? parts.join(" · ") : null;
 }
 
 export default function OwnerRequests({ slug }) {
@@ -15,6 +32,7 @@ export default function OwnerRequests({ slug }) {
   const [busyId, setBusyId] = useState("");
 
   useEffect(() => {
+    if (!slug) return;
     const unsub = streamOwnerPending(slug, setPending);
     return () => unsub?.();
   }, [slug]);
@@ -41,7 +59,13 @@ export default function OwnerRequests({ slug }) {
         <div className="list">
           {pending.map((r) => {
             const title = `${r.fechaYmd} · ${minutesToHHMM(r.startMin)}–${minutesToHHMM(r.endMin)}`;
-            const sub1 = `${r.nombre} ${r.apellido} · ${r.whatsapp} · ${r.email}`;
+
+            const cliente = `${r.nombre || ""} ${r.apellido || ""}`.trim() || "—";
+            const sub1 = `${cliente} · ${r.whatsapp || "—"} · ${r.email || "—"}`;
+
+            const serv = serviceInfo(r);
+            const subServ = serv ? `Servicio: ${serv}` : null;
+
             const sub2 = `Pago: ${payInfo(r)}`;
 
             return (
@@ -49,6 +73,7 @@ export default function OwnerRequests({ slug }) {
                 <div className="listLeft">
                   <div className="listTitle">{title}</div>
                   <div className="listSub">{sub1}</div>
+                  {subServ ? <div className="listSub">{subServ}</div> : null}
                   <div className="listSub">{sub2}</div>
                   {r.mensaje ? <div className="listSub">Msg: {r.mensaje}</div> : null}
                 </div>

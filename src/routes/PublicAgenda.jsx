@@ -1,3 +1,4 @@
+// src/routes/PublicAgenda.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import BrandShell from "../components/BrandShell.jsx";
@@ -23,6 +24,7 @@ export default function PublicAgenda() {
   const [selectedStartMin, setSelectedStartMin] = useState(null);
 
   useEffect(() => {
+    setLoading(true);
     const unsub = streamAgenda(slug, (a) => {
       setAgenda(a);
       setLoading(false);
@@ -43,15 +45,11 @@ export default function PublicAgenda() {
     setSelectedStartMin(null);
   }, [servicioKey, fechaYmd]);
 
-  /* 🔴 STREAM BLOQUEANTES EN TIEMPO REAL */
+  /* ✅ STREAM BLOQUEANTES EN TIEMPO REAL */
   useEffect(() => {
     if (!agenda || !servicio) return;
-    const unsub = streamBlockingReservasForDay(
-      slug,
-      fechaYmd,
-      setBlocking
-    );
-    return () => unsub();
+    const unsub = streamBlockingReservasForDay(slug, fechaYmd, setBlocking);
+    return () => unsub?.();
   }, [slug, agenda, fechaYmd, servicio]);
 
   const cfg = useMemo(() => {
@@ -60,10 +58,11 @@ export default function PublicAgenda() {
     const capacidad = Number(agenda.capacidadSimultanea || 1);
     const openMin = hhmmToMinutes(agenda.openHHMM || "08:00");
     const closeMin = hhmmToMinutes(agenda.closeHHMM || "20:00");
+
     return {
       stepMin,
       capacidad,
-      tiempoTurno: servicio.duracionMin,
+      tiempoTurno: Number(servicio.duracionMin || 60),
       slotStarts: buildSlotStarts(openMin, closeMin, stepMin),
     };
   }, [agenda, servicio]);
@@ -80,8 +79,19 @@ export default function PublicAgenda() {
     });
   }, [cfg, blocking]);
 
+  /* ✅ FIX: si tu selección deja de estar disponible en tiempo real → reset */
+  useEffect(() => {
+    if (!cfg) return;
+    if (selectedStartMin == null) return;
+
+    const row = availability.find((a) => a.startMin === selectedStartMin);
+    if (!row || !row.ok) {
+      setSelectedStartMin(null);
+    }
+  }, [cfg, availability, selectedStartMin]);
+
   const selectedRange =
-    selectedStartMin && cfg
+    selectedStartMin != null && cfg
       ? { startMin: selectedStartMin, endMin: selectedStartMin + cfg.tiempoTurno }
       : null;
 
@@ -100,7 +110,9 @@ export default function PublicAgenda() {
                   onClick={() => setServicioKey(s.key)}
                 >
                   <div className="t">{s.nombre}</div>
-                  <div className="s">${s.precio} · {s.duracionMin} min</div>
+                  <div className="s">
+                    ${s.precio} · {s.duracionMin} min
+                  </div>
                 </button>
               ))}
             </div>

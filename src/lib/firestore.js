@@ -92,7 +92,6 @@ export function streamMyRequests(slug, cb) {
 
 /* ===========================
    OWNER — PENDIENTES
-   (🔥 nombre exacto que tu OwnerRequests.jsx importa)
    =========================== */
 
 export function streamOwnerPending(slug, cb) {
@@ -130,7 +129,6 @@ export function streamOwnerDay(slug, fechaYmd, cb) {
 
 /* ===========================
    OWNER — BUSCAR AGENDAS POR ADMIN EMAIL
-   (🔥 nombre exacto que tu OwnerDashboard.jsx importa)
    =========================== */
 
 export async function listAgendasForAdmin(email) {
@@ -225,12 +223,27 @@ export async function ownerCreateInternalBlock({
 }) {
   const col = collection(db, "agendas", String(slug), "reservas");
 
+  // 👇 guardamos schema completo para que no se rompan cards/listados
   await addDoc(col, {
     fechaYmd: String(fechaYmd),
     startMin: Number(startMin),
     endMin: Number(endMin),
     estado: "interna",
+
+    servicioKey: null,
+    servicioNombre: null,
+    duracionMin: null,
+
+    tipoPago: null,
+    montoTotal: null,
+    montoSena: null,
+
+    nombre: "INTERNO",
+    apellido: "",
+    email: "",
+    whatsapp: "",
     mensaje: String(nota || "").trim(),
+
     publicToken: "INTERNAL",
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
