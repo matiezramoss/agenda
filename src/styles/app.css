@@ -1,0 +1,531 @@
+:root{
+  /* ====== LIGHT THEME BASE ====== */
+  --bg:#f6f7fb;
+  --card:#ffffff;
+  --muted:#64748b;
+  --text:#0f172a;
+  --border:#e2e8f0;
+
+  /* status */
+  --ok:#16a34a;
+  --bad:#ef4444;
+  --warn:#f59e0b;
+
+  /* brand (se pisan desde BDD en BrandShell) */
+  --brand:#4ea1ff;
+  --brand2:#7c4dff;
+
+  /* bootstrap bridge (si no lo seteás en BrandShell, igual hay fallback) */
+  --bs-primary: var(--brand);
+  --bs-secondary: var(--brand2);
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+a{ color:inherit; text-decoration:none; }
+
+.container{
+  max-width:1100px;
+  margin:0 auto;
+  padding:18px;
+}
+
+/* ====== CARDS / LAYOUT ====== */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:18px;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+}
+
+
+.row{ display:flex; gap:14px; flex-wrap:wrap; }
+.col{ flex:1; min-width:280px; }
+
+.h1{ font-size:22px; font-weight:900; margin:0 0 6px; letter-spacing:-0.01em; }
+.h2{ font-size:16px; font-weight:900; margin:0 0 10px; letter-spacing:-0.01em; }
+
+.muted{ color:var(--muted); font-size:13px; }
+
+.hr{
+  height:1px;
+  background:var(--border);
+  margin:12px 0;
+  border:0;
+}
+
+/* ====== BUTTONS ====== */
+.btn{
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--text);
+  padding:10px 12px;
+  border-radius:12px;
+  cursor:pointer;
+  transition: transform .05s ease, filter .15s ease, background .15s ease, border-color .15s ease;
+}
+
+.btn:hover{
+  filter: brightness(0.99);
+}
+
+.btn:active{
+  transform: translateY(1px);
+}
+
+.btn.primary{
+  background: var(--brand);
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--border));
+  color: #fff;
+}
+.btn.primary:hover{
+  filter: brightness(0.97);
+}
+
+
+.btn.danger{
+  border-color: color-mix(in srgb, var(--bad) 40%, var(--border));
+  background: color-mix(in srgb, var(--bad) 8%, #ffffff);
+}
+
+.btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
+
+/* ====== INPUTS ====== */
+.input, .select, .textarea{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--text);
+  outline:none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.input:focus, .select:focus, .textarea:focus{
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--border));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 15%, transparent);
+}
+
+.textarea{ min-height:90px; resize:vertical; }
+
+.label{
+  font-size:12px;
+  color:var(--muted);
+  margin:0 0 6px;
+  display:block;
+}
+
+/* ====== BADGES ====== */
+.badge{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  font-size:12px;
+  background:#fff;
+  color: var(--muted);
+  font-weight:700;
+}
+.badge.ok{
+  border-color: color-mix(in srgb, var(--ok) 30%, var(--border));
+  color: color-mix(in srgb, var(--ok) 55%, #000);
+  background: color-mix(in srgb, var(--ok) 7%, #fff);
+}
+.badge.bad{
+  border-color: color-mix(in srgb, var(--bad) 28%, var(--border));
+  color: color-mix(in srgb, var(--bad) 60%, #000);
+  background: color-mix(in srgb, var(--bad) 6%, #fff);
+}
+.badge.warn{
+  border-color: color-mix(in srgb, var(--warn) 30%, var(--border));
+  color: color-mix(in srgb, var(--warn) 60%, #000);
+  background: color-mix(in srgb, var(--warn) 7%, #fff);
+}
+.badge.soft{
+  border-color: color-mix(in srgb, var(--brand) 25%, var(--border));
+  background: color-mix(in srgb, var(--brand) 6%, #fff);
+  color: color-mix(in srgb, var(--brand) 55%, #000);
+}
+
+
+/* ====== SLOT GRID ====== */
+.slotGrid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap:10px;
+}
+
+.slot{
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:#fff;
+  cursor:pointer;
+  text-align:left;
+  box-shadow:none;
+}
+.slot:hover{
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--border));
+}
+.slot.green{
+  background: color-mix(in srgb, var(--ok) 6%, #fff);
+  border-color: color-mix(in srgb, var(--ok) 35%, var(--border));
+}
+.slot.red{
+  background: color-mix(in srgb, var(--bad) 5%, #fff);
+  border-color: color-mix(in srgb, var(--bad) 28%, var(--border));
+  opacity:.55;
+  cursor:not-allowed;
+}
+.slot.selected{
+  border-color: color-mix(in srgb, var(--brand) 65%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+
+.slot .t{ font-weight:900; }
+.slot .s{ font-size:12px; color:var(--muted); margin-top:2px; }
+
+/* ====== TOPBAR ====== */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.brandBox{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.logo{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  object-fit:cover;
+  background:#fff;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+}
+
+.pill{
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  font-size:12px;
+  color:var(--muted);
+  background:#fff;
+}
+
+.small{ font-size:12px; }
+
+/* ====== OPTIONAL: nicer “loading” text if you use .muted ====== */
+.muted strong{ color:var(--text); }
+
+/* ====== MOBILE ====== */
+@media (max-width: 520px){
+  .container{ padding:14px; }
+  .card{ padding:14px; border-radius:16px; }
+  .logo{ width:40px; height:40px; }
+}
+/* =========================
+   POLISH LIGHT UI
+   ========================= */
+
+/* Mejor grilla general */
+.pageGrid{
+  display:grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap:16px;
+  align-items:start;
+}
+@media (max-width: 980px){
+  .pageGrid{ grid-template-columns: 1fr; }
+}
+
+/* Cards más prolijas */
+.card{
+  border-radius:18px;
+  padding:18px;
+}
+.card.tight{ padding:14px; }
+.cardTitleRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.cardTitleRow .h2{ margin:0; }
+
+/* Chips más lindos */
+.badge{
+  background: #fff;
+  border-color: color-mix(in srgb, var(--border) 80%, #fff);
+}
+.badge.soft{
+  border:1px solid color-mix(in srgb, var(--brand) 25%, var(--border));
+  background: color-mix(in srgb, var(--brand) 8%, #fff);
+  color: color-mix(in srgb, var(--brand) 55%, var(--text));
+}
+
+/* Botones: más “bootstrap feel” */
+.btn{
+  padding:10px 14px;
+  border-radius:14px;
+}
+/* Inputs: mejor foco y altura consistente */
+.input, .select, .textarea{
+  border-radius:14px;
+  border-color: color-mix(in srgb, var(--border) 88%, #fff);
+}
+.input::placeholder, .textarea::placeholder{ color: #9aa8b7; }
+.label{ font-weight:700; letter-spacing:.01em; }
+
+/* Form layout más pro */
+.formGrid2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+}
+@media (max-width: 980px){
+  .formGrid2{ grid-template-columns: 1fr; }
+}
+.formGroup{ margin-bottom:12px; }
+
+/* Slots: estados claros + seleccionado PRO */
+.slot{
+  border-radius:16px;
+  padding:12px 12px;
+  border-color: color-mix(in srgb, var(--border) 88%, #fff);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
+}
+.slot:hover{
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--border));
+}
+.slot.green{
+  border-color: color-mix(in srgb, var(--ok) 40%, var(--border));
+  background: color-mix(in srgb, var(--ok) 8%, #fff);
+}
+.slot.red{
+  border-color: color-mix(in srgb, var(--bad) 35%, var(--border));
+  background: color-mix(in srgb, var(--bad) 7%, #fff);
+  opacity:.55;
+  cursor:not-allowed;
+  box-shadow:none;
+  filter: grayscale(.15);
+}
+.slot.selected{
+  border-color: color-mix(in srgb, var(--brand) 80%, var(--border));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 14%, transparent),
+              0 12px 30px rgba(15, 23, 42, 0.10);
+  background: color-mix(in srgb, var(--brand) 7%, #fff);
+}
+.slot.selected .t{
+  color: color-mix(in srgb, var(--brand) 60%, var(--text));
+}
+
+/* “Transferencia” – dejar de ser negro */
+.transferCard{
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--brand) 10%, #fff),
+    #fff
+  );
+  border: 1px solid color-mix(in srgb, var(--brand) 20%, var(--border));
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+}
+.transferCard .h2{ margin:0 0 8px; }
+.transferRow{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:8px;
+}
+.transferKV{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  border-top:1px dashed color-mix(in srgb, var(--brand) 18%, var(--border));
+  padding-top:10px;
+}
+.k{ color:var(--muted); font-size:12px; font-weight:800; }
+.v{ font-weight:900; }
+
+.card form input{
+    margin-bottom: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.202);
+}
+.card form select{
+    margin-bottom: 16px;
+}
+
+
+
+/* Sticky panel derecha (mejora fuerte en desktop) */
+.sticky{
+  position: sticky;
+  top: 14px;
+}
+
+/* Mis solicitudes: cards limpias */
+.reqList{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:12px;
+}
+.reqItem{
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px;
+  background:#fff;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
+}
+.reqItemTop{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+.reqWhen{ font-weight:900; }
+.reqMeta{ color:var(--muted); font-size:12px; margin-top:4px; }
+.reqState{ font-weight:900; }
+/* Fuerza los cards internos (MyRequests / owner agenda items) a look minimal */
+.reqItem, .ownerItem, .agendaItem, .listItem{
+  background:#fff !important;
+  border:1px solid var(--border) !important;
+  border-radius:14px !important;
+  box-shadow:none !important;
+  color: var(--text) !important;
+}
+
+.reqItem * , .ownerItem * , .agendaItem * , .listItem *{
+  color: inherit;
+}
+.h1{ font-size:20px; font-weight:900; }
+.h2{ font-size:15px; font-weight:900; }
+.muted{ font-size:13px; line-height:1.35; }
+
+.hr{ margin:14px 0; background: color-mix(in srgb, var(--border) 85%, #fff); }
+
+.input, .select, .textarea{
+  background:#fff;
+  border-radius:14px;
+  border-color: color-mix(in srgb, var(--border) 88%, #fff);
+  box-shadow:none;
+}
+
+/* ======================
+   MINIMAL LISTS
+   ====================== */
+
+.reqList{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap:12px;
+}
+
+.reqItem{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:none;
+}
+
+.reqItemTop{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+
+.reqWhen{
+  font-weight:800;
+}
+
+.reqMeta{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+}
+/* ======================
+   MINIMAL LIST (OWNER)
+   ====================== */
+
+.list{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.listItem{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:none;
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+}
+
+.listLeft{ min-width: 0; }
+.listRight{ display:flex; flex-direction:column; gap:8px; }
+
+.listTitle{
+  font-weight:900;
+  letter-spacing:-0.01em;
+}
+
+.listSub{
+  margin-top:4px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.35;
+}
+
+.btnRow{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+/* ======================
+   BUTTONS (CRITERIO)
+   ====================== */
+
+/* Primary = minimal outline (NO gradientes) */
+.btn.primary{
+  background:#fff;
+  border:1px solid color-mix(in srgb, var(--brand) 35%, var(--border));
+  color: color-mix(in srgb, var(--brand) 70%, var(--text));
+}
+
+/* Success = verde sólido (ENVIAR/CONFIRMAR) */
+.btn.success{
+  background: var(--ok);
+  border:1px solid var(--ok);
+  color:#fff;
+}
+.btn.success:hover{ filter: brightness(0.96); }
+
+/* Danger = rojo sólido */
+.btn.danger{
+  background: var(--bad);
+  border:1px solid var(--bad);
+  color:#fff;
+}
+.btn.danger:hover{ filter: brightness(0.96); }
