@@ -10,10 +10,12 @@ import {
   orderBy,
   limit,
   updateDoc,
+  setDoc,
   serverTimestamp,
   onSnapshot,
 } from "firebase/firestore";
-import { db } from "./firebase";
+
+import { db, auth } from "./firebase";
 import { getOrCreatePublicToken } from "./tokens";
 
 /* ===========================
@@ -55,9 +57,7 @@ export function streamBlockingReservasForDay(slug, fechaYmd, cb) {
   });
 }
 
-/* ===========================
-   (compat) si tu código viejo llama listBlockingReservasForDay
-   =========================== */
+// compat: si tu código viejo llama listBlockingReservasForDay
 export async function listBlockingReservasForDay(slug, fechaYmd) {
   const col = collection(db, "agendas", String(slug), "reservas");
   const q = query(
@@ -96,12 +96,7 @@ export function streamMyRequests(slug, cb) {
 
 export function streamOwnerPending(slug, cb) {
   const col = collection(db, "agendas", String(slug), "reservas");
-  const q = query(
-    col,
-    where("estado", "==", "pendiente"),
-    orderBy("createdAt", "desc"),
-    limit(300)
-  );
+  const q = query(col, where("estado", "==", "pendiente"), orderBy("createdAt", "desc"), limit(300));
 
   return onSnapshot(q, (snap) => {
     cb(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
@@ -139,16 +134,13 @@ export async function listAgendasForAdmin(email) {
   const snap = await getDocs(qy);
 
   const out = snap.docs.map((d) => ({ slug: d.id, ...d.data() }));
-
-  out.sort((a, b) =>
-    String(a.nombrePublico || a.slug).localeCompare(String(b.nombrePublico || b.slug))
-  );
+  out.sort((a, b) => String(a.nombrePublico || a.slug).localeCompare(String(b.nombrePublico || b.slug)));
 
   return out;
 }
 
 /* ===========================
-   CREAR SOLICITUD
+   CREAR SOLICITUD (PUBLIC)
    - servicios
    - seña / total
    =========================== */
@@ -208,22 +200,13 @@ export async function createPendingRequest({
 
 export async function ownerSetEstado(slug, reservaId, estado) {
   const ref = doc(db, "agendas", String(slug), "reservas", String(reservaId));
-  await updateDoc(ref, {
-    estado: String(estado),
-    updatedAt: serverTimestamp(),
-  });
+  await updateDoc(ref, { estado: String(estado), updatedAt: serverTimestamp() });
 }
 
-export async function ownerCreateInternalBlock({
-  slug,
-  fechaYmd,
-  startMin,
-  endMin,
-  nota,
-}) {
+export async function ownerCreateInternalBlock({ slug, fechaYmd, startMin, endMin, nota }) {
   const col = collection(db, "agendas", String(slug), "reservas");
 
-  // 👇 guardamos schema completo para que no se rompan cards/listados
+  // schema completo
   await addDoc(col, {
     fechaYmd: String(fechaYmd),
     startMin: Number(startMin),
@@ -248,4 +231,93 @@ export async function ownerCreateInternalBlock({
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+}
+
+/* ===========================
+   SUPER ADMIN — VALIDACIÓN (🔥 IMPORTANTE)
+   =========================== */
+
+// ✅ ESTA FUNCIÓN ES LA QUE TE ESTABA DUPLICADA.
+// Dejála UNA SOLA VEZ.
+export async function getSuperAdminSelf() {
+  const u = auth.currentUser;
+  if (!u?.uid) return null;
+
+  const ref = doc(db, "superadmins", u.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+
+  return { uid: snap.id, ...snap.data() };
+}
+
+/* ===========================
+   SUPER ADMIN — AGENDAS (CRUD)
+   =========================== */
+
+export function streamAllAgendas(cb) {
+  const col = collection(db, "agendas");
+  const qy = query(col, limit(500));
+
+  return onSnapshot(qy, (snap) => {
+    const out = snap.docs.map((d) => ({ slug: d.id, ...d.data() }));
+    out.sort((a, b) => String(a.nombrePublico || a.slug).localeCompare(String(b.nombrePublico || b.slug)));
+    cb(out);
+  });
+}
+
+export async function superCreateAgenda(slug, data) {
+  const cleanSlug = String(slug || "").trim();
+  if (!cleanSlug) throw new Error("Slug requerido.");
+
+  const ref = doc(db, "agendas", cleanSlug);
+
+  const payload = {
+    ...data,
+    admin: String(data?.admin || "").trim().toLowerCase() || null,
+    stepMin: Number(data?.stepMin ?? 30),
+    capacidadSimultanea: Number(data?.capacidadSimultanea ?? 1),
+    tiempoTurno: Number(data?.tiempoTurno ?? 60),
+
+    openHHMM: String(data?.openHHMM || "08:00"),
+    closeHHMM: String(data?.closeHHMM || "20:00"),
+
+    aceptaSena: Boolean(data?.aceptaSena),
+    senaPct: Number(data?.senaPct ?? 0),
+
+    colorPrimario: String(data?.colorPrimario || "#4ea1ff"),
+    colorSecundario: String(data?.colorSecundario || "#7c4dff"),
+
+    nombrePublico: String(data?.nombrePublico || cleanSlug),
+    textoPersonalizado: String(data?.textoPersonalizado || "Reservá tu turno en segundos."),
+    logoUrl: String(data?.logoUrl || ""),
+
+    alias: String(data?.alias || ""),
+    cbu: String(data?.cbu || ""),
+
+    servicios: data?.servicios && typeof data.servicios === "object" ? data.servicios : {},
+
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  await setDoc(ref, payload, { merge: false });
+}
+
+export async function superUpdateAgenda(slug, patch) {
+  const cleanSlug = String(slug || "").trim();
+  if (!cleanSlug) throw new Error("Slug requerido.");
+
+  const ref = doc(db, "agendas", cleanSlug);
+
+  const payload = {
+    ...patch,
+    admin:
+      patch?.admin !== undefined
+        ? String(patch.admin || "").trim().toLowerCase() || null
+        : undefined,
+    updatedAt: serverTimestamp(),
+  };
+
+  Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+  await updateDoc(ref, payload);
 }

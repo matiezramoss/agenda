@@ -1,8 +1,6 @@
+// src/components/Ui.jsx
 import React from "react";
 
-/* ===========================
-   Card
-   =========================== */
 export function Card({ children, className = "", ...props }) {
   return (
     <div className={`card ${className}`} {...props}>
@@ -11,9 +9,6 @@ export function Card({ children, className = "", ...props }) {
   );
 }
 
-/* ===========================
-   Inputs
-   =========================== */
 export function Input({ className = "", ...props }) {
   return <input className={`input ${className}`} {...props} />;
 }
@@ -30,14 +25,6 @@ export function Textarea({ className = "", ...props }) {
   return <textarea className={`textarea ${className}`} {...props} />;
 }
 
-/* ===========================
-   Button
-   className esperadas:
-   - primary
-   - success
-   - danger
-   - ghost (opcional)
-   =========================== */
 export function Button({
   className = "",
   type = "button",
@@ -46,25 +33,12 @@ export function Button({
   ...props
 }) {
   return (
-    <button
-      type={type}
-      disabled={disabled}
-      className={`btn ${className}`}
-      {...props}
-    >
+    <button type={type} disabled={disabled} className={`btn ${className}`} {...props}>
       {children}
     </button>
   );
 }
 
-/* ===========================
-   Badge
-   variants:
-   - ok
-   - warn
-   - danger (opcional)
-   - soft (opcional)
-   =========================== */
 export function Badge({ variant = "", children }) {
   return <span className={`badge ${variant}`}>{children}</span>;
 }
