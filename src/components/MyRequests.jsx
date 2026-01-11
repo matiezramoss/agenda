@@ -24,25 +24,38 @@ export default function MyRequests({ slug }) {
 
   return (
     <div className="reqList">
-      {rows.map((r) => {
-        const when = `${r.fechaYmd} · ${minutesToHHMM(r.startMin)}–${minutesToHHMM(r.endMin)}`;
+  {rows.map((r) => {
+    const when = `${r.fechaYmd} · ${minutesToHHMM(r.startMin)}–${minutesToHHMM(r.endMin)}`;
 
-        return (
-          <div key={r.id} className="reqItem">
-            <div className="reqItemTop">
-              <div>
-                <div className="reqWhen">{when}</div>
-                <div className="reqMeta">
-                  Pago: {r.tipoPago} · Total: {r.montoTotal}
-                  {r.montoSena ? ` · Seña: ${r.montoSena}` : ""}
-                </div>
-              </div>
+    return (
+      <div key={r.id} className="reqItem reqItemPro">
+        <div className="reqItemTop">
+          <div className="reqLeft">
+            <div className="reqWhen">{when}</div>
 
-              <EstadoBadge estado={r.estado} />
+            <div className="reqMetaRow">
+              <span className="reqChip">
+                Pago: <strong>{r.tipoPago}</strong>
+              </span>
+                <br />
+              <span className="reqChip">
+                Total: <strong>${r.montoTotal}</strong>
+              </span>
+                <br />
+              {r.montoSena && (
+                <span className="reqChip soft">
+                Seña: <strong>${r.montoSena}</strong>
+                </span>
+              )}
             </div>
           </div>
-        );
-      })}
-    </div>
+
+          <EstadoBadge estado={r.estado} />
+        </div>
+      </div>
+    );
+  })}
+</div>
+
   );
 }

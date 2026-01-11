@@ -100,9 +100,10 @@ export default function RequestForm({
         {err && <div style={{ color: "#b91c1c" }}>{err}</div>}
         {ok && <div style={{ color: "#166534" }}>{ok}</div>}
 
-        <Button className="primary" disabled={!canSubmit || busy}>
-          Confirmar reserva
-        </Button>
+        <Button className="primary" type="submit" disabled={!canSubmit || busy}>
+  Confirmar reserva
+</Button>
+
       </form>
     </Card>
   );
