@@ -1,3 +1,4 @@
+// src/components/OwnerDayAgenda.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Card, Badge } from "./Ui.jsx";
 import { streamOwnerDay } from "../lib/firestore.js";
@@ -18,14 +19,19 @@ function serviceInfo(r) {
 }
 
 function payInfo(r) {
-  const t = r.tipoPago || null;
-  if (!t) return null;
+  const tipo = (r?.tipoPago || "").toLowerCase();
+  const total = Number(r?.montoTotal);
+  const sena = Number(r?.montoSena);
 
-  const total = r.montoTotal != null ? `total ${money(r.montoTotal)}` : null;
-  const sena = r.montoSena != null ? `seña ${money(r.montoSena)}` : null;
+  if (tipo === "sena") {
+    const senaOk = Number.isFinite(sena) ? sena : 0;
+    const totalOk = Number.isFinite(total) ? total : 0;
+    const resta = Math.max(0, totalOk - senaOk);
+    return `Seña $${money(senaOk)} · Resta $${money(resta)}`;
+  }
 
-  const extra = [total, sena].filter(Boolean).join(" · ");
-  return extra ? `${t} · ${extra}` : t;
+  if (Number.isFinite(total)) return "Total";
+  return null;
 }
 
 export default function OwnerDayAgenda({ slug, fechaYmd }) {

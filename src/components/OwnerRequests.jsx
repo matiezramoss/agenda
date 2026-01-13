@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+// src/components/OwnerRequests.jsx
+import React, { useEffect, useMemo, useState } from "react";
 import { streamOwnerPending, ownerSetEstado } from "../lib/firestore.js";
 import { minutesToHHMM } from "../lib/time.js";
 import { Card, Button, Badge } from "./Ui.jsx";
@@ -9,22 +10,29 @@ function money(v) {
   return new Intl.NumberFormat("es-AR").format(n);
 }
 
-function payInfo(r) {
-  const t = r.tipoPago || "—";
-  const total = money(r.montoTotal ?? "—");
-  const sena = r.montoSena ? ` · seña ${money(r.montoSena)}` : "";
-  return `${t} · total ${total}${sena}`;
-}
-
 function serviceInfo(r) {
-  // soporta tanto el nuevo schema (servicioNombre/duracionMin/montoTotal)
-  // como valores faltantes
   const name = r.servicioNombre || r.servicioKey || null;
   const dur = r.duracionMin ? `${r.duracionMin} min` : null;
   const price = r.montoTotal != null ? `$${money(r.montoTotal)}` : null;
 
   const parts = [name, dur, price].filter(Boolean);
   return parts.length ? parts.join(" · ") : null;
+}
+
+function payInfo(r) {
+  const tipo = (r?.tipoPago || "").toLowerCase();
+  const total = Number(r?.montoTotal);
+  const sena = Number(r?.montoSena);
+
+  if (tipo === "sena") {
+    const senaOk = Number.isFinite(sena) ? sena : 0;
+    const totalOk = Number.isFinite(total) ? total : 0;
+    const resta = Math.max(0, totalOk - senaOk);
+    return `Seña $${money(senaOk)} · Resta $${money(resta)}`;
+  }
+
+  if (Number.isFinite(total)) return `Total $${money(total)}`;
+  return tipo ? tipo : "—";
 }
 
 export default function OwnerRequests({ slug }) {
@@ -36,6 +44,8 @@ export default function OwnerRequests({ slug }) {
     const unsub = streamOwnerPending(slug, setPending);
     return () => unsub?.();
   }, [slug]);
+
+  const items = useMemo(() => pending || [], [pending]);
 
   async function setEstado(id, estado) {
     setBusyId(id);
@@ -53,11 +63,11 @@ export default function OwnerRequests({ slug }) {
       <div className="muted">Confirmar bloquea turno. Rechazar no bloquea.</div>
       <hr className="hr" />
 
-      {!pending.length ? (
+      {!items.length ? (
         <div className="muted">No hay pendientes.</div>
       ) : (
         <div className="list">
-          {pending.map((r) => {
+          {items.map((r) => {
             const title = `${r.fechaYmd} · ${minutesToHHMM(r.startMin)}–${minutesToHHMM(r.endMin)}`;
 
             const cliente = `${r.nombre || ""} ${r.apellido || ""}`.trim() || "—";
@@ -66,7 +76,7 @@ export default function OwnerRequests({ slug }) {
             const serv = serviceInfo(r);
             const subServ = serv ? `Servicio: ${serv}` : null;
 
-            const sub2 = `Pago: ${payInfo(r)}`;
+            const subPago = `Pago: ${payInfo(r)}`;
 
             return (
               <div key={r.id} className="listItem">
@@ -74,7 +84,7 @@ export default function OwnerRequests({ slug }) {
                   <div className="listTitle">{title}</div>
                   <div className="listSub">{sub1}</div>
                   {subServ ? <div className="listSub">{subServ}</div> : null}
-                  <div className="listSub">{sub2}</div>
+                  <div className="listSub">{subPago}</div>
                   {r.mensaje ? <div className="listSub">Msg: {r.mensaje}</div> : null}
                 </div>
 
