@@ -624,3 +624,13 @@ a{ color:inherit; text-decoration:none; }
 #btnConf{
   margin: 1rem;
 }
+#btnWsp{
+  background-color: #25D366;
+  border-color: #25D366;
+  color: white;
+}
+#btnWsp:hover{
+  background-color: #1DA851;
+  border-color: #1DA851;
+  color: white;
+}

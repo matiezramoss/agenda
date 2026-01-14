@@ -35,6 +35,38 @@ function payInfo(r) {
   return tipo ? tipo : "—";
 }
 
+/* ===========================
+   WhatsApp helpers
+   =========================== */
+
+function normalizePhone(raw) {
+  // deja solo dígitos
+  let digits = String(raw || "").replace(/\D/g, "");
+  if (!digits) return "";
+
+  // si viene con 00... (prefijo internacional), lo limpiamos
+  digits = digits.replace(/^00+/, "");
+
+  // si empieza con 0 (011..., 0341...), lo sacamos
+  digits = digits.replace(/^0+/, "");
+
+  // si ya viene con 549..., OK
+  if (digits.startsWith("549")) return digits;
+
+  // si ya viene con 54 pero sin 9, lo convertimos a 549 (caso típico AR)
+  if (digits.startsWith("54")) return `549${digits.slice(2)}`;
+
+  // default AR: asumimos móvil y armamos 549 + número
+  return `549${digits}`;
+}
+
+function buildWaLink(phoneDigits, text) {
+  const p = String(phoneDigits || "").trim();
+  if (!p) return "";
+  const msg = encodeURIComponent(String(text || "").trim());
+  return `https://wa.me/${p}${msg ? `?text=${msg}` : ""}`;
+}
+
 export default function OwnerRequests({ slug }) {
   const [pending, setPending] = useState([]);
   const [busyId, setBusyId] = useState("");
@@ -78,6 +110,13 @@ export default function OwnerRequests({ slug }) {
 
             const subPago = `Pago: ${payInfo(r)}`;
 
+            // ✅ WhatsApp link
+            const waDigits = normalizePhone(r.whatsapp);
+            const waMsg = `Hola ${cliente}. Soy del local. Vi tu solicitud para ${r.fechaYmd} ${minutesToHHMM(
+              r.startMin
+            )}–${minutesToHHMM(r.endMin)}.`;
+            const waLink = buildWaLink(waDigits, waMsg);
+
             return (
               <div key={r.id} className="listItem">
                 <div className="listLeft">
@@ -92,6 +131,18 @@ export default function OwnerRequests({ slug }) {
                   <Badge variant="warn">Pendiente</Badge>
 
                   <div className="btnRow" style={{ marginTop: 10 }}>
+                    {/* ✅ WHATSAPP PRIMERO */}
+                    {/* <Button
+                      id="btnWsp"
+                      disabled={!waLink}
+                      onClick={() => {
+                        if (!waLink) return;
+                        window.open(waLink, "_blank", "noopener,noreferrer");
+                      }}
+                    >
+                      {waLink ? "WhatsApp" : "WhatsApp (sin número)"}
+                    </Button> */}
+
                     <Button
                       className="success"
                       disabled={busyId === r.id}
